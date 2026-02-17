@@ -1,8 +1,23 @@
-version: "3.9"
-
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sentinellab
+      POSTGRES_PASSWORD: sentinellab
+      POSTGRES_DB: sentinellab
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   soc-api:
     build: ./soc-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://sentinellab:sentinellab@db:5432/sentinellab
+    depends_on:
+      - db
     ports:
       - "8000:8000"
 
+volumes:
+  pgdata:

@@ -14,6 +14,9 @@ services:
     build: ./soc-api
     environment:
       DATABASE_URL: postgresql+psycopg://sentinellab:sentinellab@db:5432/sentinellab
+      INGEST_HMAC_SECRET: supersecret_change_me
+      INGEST_MAX_SKEW_SECONDS: "120"
+      INGEST_NONCE_TTL_SECONDS: "300"
     depends_on:
       - db
     ports:

@@ -110,6 +110,7 @@ def list_alerts(limit: int = 50, db: Session = Depends(get_db)):
         {
             "id": a.id,
             "created_at": a.created_at.isoformat(),
+            "resolved_at": a.resolved_at.isoformat() if a.resolved_at else None,
             "rule": a.rule,
             "severity": a.severity,
             "host": a.host,
@@ -121,4 +122,37 @@ def list_alerts(limit: int = 50, db: Session = Depends(get_db)):
         for a in rows
     ]
     return {"count": len(items), "items": items}
+
+@app.patch("/alerts/{alert_id}/resolve")
+def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
+    alert = db.get(Alert, alert_id)
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    if not alert.is_active:
+        return {"ok": True, "id": alert.id, "status": "already_resolved"}
+
+    alert.is_active = False
+    alert.resolved_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(alert)
+
+    return {
+        "ok": True,
+        "id": alert.id,
+        "status": "resolved",
+        "resolved_at": alert.resolved_at.isoformat(),
+    }
+@app.patch("/alerts/{alert_id}/reopen")
+def reopen_alert(alert_id: int, db: Session = Depends(get_db)):
+    alert = db.get(Alert, alert_id)
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    alert.is_active = True
+    alert.resolved_at = None
+    db.commit()
+    db.refresh(alert)
+
+    return {"ok": True, "id": alert.id, "status": "reopened"}
 

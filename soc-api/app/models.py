@@ -24,6 +24,7 @@ class Alert(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     rule: Mapped[str] = mapped_column(String(128), index=True)
     severity: Mapped[str] = mapped_column(String(16), index=True)  # low / medium / high
     host: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)

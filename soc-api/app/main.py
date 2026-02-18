@@ -8,7 +8,7 @@ from .db import SessionLocal, engine, Base
 from .models import Event, Alert
 app = FastAPI(title="SentinelLab SOC")
 # MVP: crée les tables au démarrage (on fera Alembic plus tard)
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 def get_db():
     db = SessionLocal()
     try:

@@ -17,70 +17,55 @@
     </div>
   </header>
 
-  <main class="grid">
+  <main class="container">
+    <section class="kpis">
+      <div class="kpi"><div class="kpi-label">Active alerts</div><div class="kpi-value" id="kpiActiveAlerts">—</div></div>
+      <div class="kpi"><div class="kpi-label">Total alerts</div><div class="kpi-value" id="kpiTotalAlerts">—</div></div>
+      <div class="kpi"><div class="kpi-label">Events (1h)</div><div class="kpi-value" id="kpiEventsHour">—</div></div>
+      <div class="kpi"><div class="kpi-label">Total events</div><div class="kpi-value" id="kpiTotalEvents">—</div></div>
+    </section>
+
     <section class="card">
       <div class="card-header">
         <h2>Alerts</h2>
-        <span class="pill">{{ alerts|length }} shown</span>
+        <div class="filters">
+          <label class="check">
+            <input type="checkbox" id="activeOnly" checked />
+            Active only
+          </label>
+
+          <select id="severity">
+            <option value="">All severities</option>
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+
+          <input id="srcIp" placeholder="src_ip (ex: 10.0.0.5)" />
+          <button id="applyFilters">Apply</button>
+        </div>
       </div>
 
-      {% if alerts|length == 0 %}
-        <p class="muted">No alerts yet.</p>
-      {% else %}
-        <div class="table">
-          <div class="row head">
-            <div>ID</div><div>Created</div><div>Rule</div><div>Severity</div>
-            <div>Host</div><div>Src IP</div><div>User</div><div>Status</div>
-          </div>
-          {% for a in alerts %}
-            <div class="row">
-              <div>#{{ a.id }}</div>
-              <div class="mono">{{ a.created_at }}</div>
-              <div>{{ a.rule }}</div>
-              <div class="sev sev-{{ a.severity }}">{{ a.severity }}</div>
-              <div>{{ a.host or "—" }}</div>
-              <div class="mono">{{ a.src_ip or "—" }}</div>
-              <div>{{ a.user or "—" }}</div>
-              <div>
-                {% if a.is_active %}
-                  <span class="status active">active</span>
-                {% else %}
-                  <span class="status resolved">resolved</span>
-                {% endif %}
-              </div>
-            </div>
-            <div class="row-detail muted">{{ a.message }}</div>
-          {% endfor %}
+      <div class="table" id="alertsTable">
+        <div class="row head">
+          <div>ID</div><div>Time</div><div>Rule</div><div>Severity</div><div>Host</div><div>Src IP</div><div>User</div><div>Status</div><div>Action</div>
         </div>
-      {% endif %}
+        <div class="row"><div class="muted" style="grid-column:1/-1">Loading…</div></div>
+      </div>
     </section>
 
     <section class="card">
       <div class="card-header">
         <h2>Recent events</h2>
-        <span class="pill">{{ events|length }} shown</span>
+        <div class="muted" id="eventsCount"></div>
       </div>
 
-      {% if events|length == 0 %}
-        <p class="muted">No events yet.</p>
-      {% else %}
-        <div class="table">
-          <div class="row head">
-            <div>ID</div><div>Received</div><div>Type</div><div>Host</div><div>Src IP</div><div>User</div>
-          </div>
-          {% for e in events %}
-            <div class="row">
-              <div>#{{ e.id }}</div>
-              <div class="mono">{{ e.received_at }}</div>
-              <div>{{ e.event_type }}</div>
-              <div>{{ e.host }}</div>
-              <div class="mono">{{ e.src_ip or "—" }}</div>
-              <div>{{ e.user or "—" }}</div>
-            </div>
-            <div class="row-detail muted">{{ e.message }}</div>
-          {% endfor %}
+      <div class="table" id="eventsTable">
+        <div class="row head">
+          <div>ID</div><div>Received</div><div>Type</div><div>Host</div><div>Src IP</div><div>User</div>
         </div>
-      {% endif %}
+        <div class="row"><div class="muted" style="grid-column:1/-1">Loading…</div></div>
+      </div>
     </section>
   </main>
 

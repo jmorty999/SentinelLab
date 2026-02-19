@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SentinelLab SOC</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>SentinelLab SOC</h1>
+      <p class="muted">Mini dashboard — Alerts & Events</p>
+    </div>
+    <div class="actions">
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <div class="card-header">
+        <h2>Alerts</h2>
+        <span class="pill">{{ alerts|length }} shown</span>
+      </div>
+
+      {% if alerts|length == 0 %}
+        <p class="muted">No alerts yet.</p>
+      {% else %}
+        <div class="table">
+          <div class="row head">
+            <div>ID</div><div>Created</div><div>Rule</div><div>Severity</div>
+            <div>Host</div><div>Src IP</div><div>User</div><div>Status</div>
+          </div>
+          {% for a in alerts %}
+            <div class="row">
+              <div>#{{ a.id }}</div>
+              <div class="mono">{{ a.created_at }}</div>
+              <div>{{ a.rule }}</div>
+              <div class="sev sev-{{ a.severity }}">{{ a.severity }}</div>
+              <div>{{ a.host or "—" }}</div>
+              <div class="mono">{{ a.src_ip or "—" }}</div>
+              <div>{{ a.user or "—" }}</div>
+              <div>
+                {% if a.is_active %}
+                  <span class="status active">active</span>
+                {% else %}
+                  <span class="status resolved">resolved</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="row-detail muted">{{ a.message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Recent events</h2>
+        <span class="pill">{{ events|length }} shown</span>
+      </div>
+
+      {% if events|length == 0 %}
+        <p class="muted">No events yet.</p>
+      {% else %}
+        <div class="table">
+          <div class="row head">
+            <div>ID</div><div>Received</div><div>Type</div><div>Host</div><div>Src IP</div><div>User</div>
+          </div>
+          {% for e in events %}
+            <div class="row">
+              <div>#{{ e.id }}</div>
+              <div class="mono">{{ e.received_at }}</div>
+              <div>{{ e.event_type }}</div>
+              <div>{{ e.host }}</div>
+              <div class="mono">{{ e.src_ip or "—" }}</div>
+              <div>{{ e.user or "—" }}</div>
+            </div>
+            <div class="row-detail muted">{{ e.message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </section>
+  </main>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>
+

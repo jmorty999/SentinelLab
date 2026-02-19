@@ -1,12 +1,17 @@
 from datetime import datetime, timezone, timedelta
 from typing import Literal, Optional
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 from .db import SessionLocal, engine, Base
 from .models import Event, Alert
 app = FastAPI(title="SentinelLab SOC")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 # MVP: crée les tables au démarrage (on fera Alembic plus tard)
 Base.metadata.create_all(bind=engine)
 def get_db():
@@ -15,6 +20,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 class IngestEvent(BaseModel):
     ts: datetime = Field(..., description="timestamp ISO")
     host: str = Field(..., min_length=1, max_length=128)
@@ -22,9 +28,11 @@ class IngestEvent(BaseModel):
     src_ip: Optional[str] = Field(default=None, max_length=64)
     user: Optional[str] = Field(default=None, max_length=64)
     message: str = Field(..., min_length=1, max_length=2000)
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 @app.post("/ingest")
 def ingest(event: IngestEvent, db: Session = Depends(get_db)):
     ts = event.ts
@@ -42,6 +50,7 @@ def ingest(event: IngestEvent, db: Session = Depends(get_db)):
     db.add(row)
     db.commit()
     db.refresh(row)
+
     # Detection: SSH brute force (>= 5 fails / 2 min / same IP)
     if row.event_type == "ssh_failed_login" and row.src_ip:
         window_start = datetime.now(timezone.utc) - timedelta(minutes=2)
@@ -79,6 +88,7 @@ def ingest(event: IngestEvent, db: Session = Depends(get_db)):
             db.add(alert)
             db.commit()
     return {"ok": True, "event_id": row.id}
+
 @app.get("/events")
 def list_events(limit: int = 100, db: Session = Depends(get_db)):
     limit = max(1, min(limit, 500))
@@ -121,4 +131,22 @@ def list_alerts(limit: int = 50, db: Session = Depends(get_db)):
         for a in rows
     ]
     return {"count": len(items), "items": items}
+# -------- Mini dashboard --------
+@app.get("/", response_class=HTMLResponse)
+def dashboard(request: Request, db: Session = Depends(get_db)):
+    alerts = db.execute(
+        select(Alert).order_by(desc(Alert.created_at)).limit(25)
+    ).scalars().all()
 
+    events = db.execute(
+        select(Event).order_by(desc(Event.received_at)).limit(25)
+    ).scalars().all()
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "alerts": alerts,
+            "events": events,
+        },
+    )

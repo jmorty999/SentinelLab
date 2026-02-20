@@ -121,4 +121,3 @@ def list_alerts(limit: int = 50, db: Session = Depends(get_db)):
         for a in rows
     ]
     return {"count": len(items), "items": items}
-

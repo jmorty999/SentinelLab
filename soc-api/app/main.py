@@ -146,6 +146,54 @@ def list_alerts(limit: int = 50, db: Session = Depends(get_db)):
         for a in rows
     ]
     return {"count": len(items), "items": items}
+@app.get("/api/stats")
+def stats(db: Session = Depends(get_db)):
+    now = datetime.now(timezone.utc)
+    hour_ago = now - timedelta(hours=1)
+
+    # Events per minute (last hour)
+    # Postgres: date_trunc('minute', received_at)
+    per_min_stmt = (
+        select(
+            func.date_trunc("minute", Event.received_at).label("bucket"),
+            func.count().label("count"),
+        )
+        .where(Event.received_at >= hour_ago)
+        .group_by("bucket")
+        .order_by("bucket")
+    )
+    per_min_rows = db.execute(per_min_stmt).all()
+    events_per_min = [
+        {"t": r.bucket.isoformat(), "c": int(r.count)} for r in per_min_rows
+    ]
+
+    # Alerts by severity
+    sev_stmt = (
+        select(Alert.severity, func.count().label("count"))
+        .group_by(Alert.severity)
+        .order_by(desc("count"))
+    )
+    sev_rows = db.execute(sev_stmt).all()
+    alerts_by_severity = [{"severity": s, "count": int(c)} for s, c in sev_rows]
+
+    # Top source IPs (events last hour)
+    top_ip_stmt = (
+        select(Event.src_ip, func.count().label("count"))
+        .where(Event.received_at >= hour_ago)
+        .where(Event.src_ip.is_not(None))
+        .group_by(Event.src_ip)
+        .order_by(desc("count"))
+        .limit(5)
+    )
+    top_ip_rows = db.execute(top_ip_stmt).all()
+    top_src_ips = [{"src_ip": ip, "count": int(c)} for ip, c in top_ip_rows]
+
+    return {
+        "window": {"from": hour_ago.isoformat(), "to": now.isoformat()},
+        "events_per_min": events_per_min,
+        "alerts_by_severity": alerts_by_severity,
+        "top_src_ips": top_src_ips,
+    }
 
 
 @app.patch("/alerts/{alert_id}/resolve")
@@ -208,43 +256,38 @@ def dashboard_data(
     ).scalars().all()
 
     events = db.execute(
-        select(Event).order_by(desc(Event.received_at)).limit(events_limit)
-    ).scalars().all()
-
-    return JSONResponse(
-        {
-            "kpi": {
-                "active_alerts": active_alerts_count,
-                "total_alerts": total_alerts_count,
-                "events_last_hour": events_last_hour,
-                "total_events": total_events,
-            },
-            "alerts": [
-                {
-                    "id": a.id,
-                    "created_at": a.created_at.isoformat(),
-                    "rule": a.rule,
-                    "severity": a.severity,
-                    "host": a.host,
-                    "src_ip": a.src_ip,
-                    "user": a.user,
-                    "message": a.message,
-                    "is_active": a.is_active,
-                }
-                for a in alerts
-            ],
-            "events": [
-                {
-                    "id": e.id,
-                    "received_at": e.received_at.isoformat(),
-                    "event_type": e.event_type,
-                    "host": e.host,
-                    "src_ip": e.src_ip,
-                    "user": e.user,
-                    "message": e.message,
-                }
-                for e in events
-            ],
+        select(Event).order_by(desc(Event.received_at)).limit(events_limit)).scalars().all()
+    def alert_to_dict(a: Alert):
+        return {
+            "id": a.id,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "rule": a.rule,
+            "severity": a.severity,
+            "host": a.host,
+            "src_ip": a.src_ip,
+            "user": a.user,
+            "message": a.message,
+            "is_active": a.is_active,
         }
-    )
 
+    def event_to_dict(e: Event):
+        return {
+            "id": e.id,
+            "received_at": e.received_at.isoformat() if e.received_at else None,
+            "event_type": e.event_type,
+            "host": e.host,
+            "src_ip": e.src_ip,
+            "user": e.user,
+            "message": e.message,
+        }
+
+    return {
+        "kpi": {
+            "active_alerts": int(active_alerts_count),
+            "total_alerts": int(total_alerts_count),
+            "events_last_hour": int(events_last_hour),
+            "total_events": int(total_events),
+        },
+        "alerts": [alert_to_dict(a) for a in alerts],
+        "events": [event_to_dict(e) for e in events],
+    }

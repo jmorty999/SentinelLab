@@ -65,4 +65,4 @@ SentinelLab aims to demonstrate:
 
 Educational project. No offensive tools or malware are included.
 
-project finished
+project finished but tests are needed

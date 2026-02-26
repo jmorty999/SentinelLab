@@ -16,6 +16,7 @@ services:
       DATABASE_URL: postgresql+psycopg://sentinellab:sentinellab@db:5432/sentinellab
       DASH_USER: admin
       DASH_PASS: admin
+
     depends_on:
       - db
     ports:

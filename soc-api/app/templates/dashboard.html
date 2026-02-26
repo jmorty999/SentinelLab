@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SentinelLab SOC</title>
+
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div>
+      <h1>SentinelLab SOC</h1>
+      <p class="muted">Mini dashboard — Alerts & Events</p>
+    </div>
+    <div class="actions">
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Active alerts</div>
+        <div class="kpi-value" id="kpiActiveAlerts">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total alerts</div>
+        <div class="kpi-value" id="kpiTotalAlerts">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Events (1h)</div>
+        <div class="kpi-value" id="kpiEventsHour">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total events</div>
+        <div class="kpi-value" id="kpiTotalEvents">—</div>
+      </div>
+    </section>
+
+    <!-- Analytics -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Analytics</h2>
+        <span class="pill" id="statsWindow">—</span>
+      </div>
+
+      <div class="charts">
+        <div class="chart">
+          <h3>Events / minute</h3>
+          <div class="canvas-wrap">
+            <canvas id="chartEventsPerMin"></canvas>
+          </div>
+        </div>
+
+        <div class="chart">
+          <h3>Alerts by severity</h3>
+          <div class="canvas-wrap">
+            <canvas id="chartSeverity"></canvas>
+          </div>
+        </div>
+
+        <div class="chart">
+          <h3>Top source IPs</h3>
+          <div class="canvas-wrap">
+            <canvas id="chartTopIPs"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alerts -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Alerts</h2>
+        <div class="filters">
+          <label class="check">
+            <input type="checkbox" id="activeOnly" checked />
+            Active only
+          </label>
+
+          <select id="severity">
+            <option value="">All severities</option>
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+
+          <input id="srcIp" placeholder="src_ip (ex: 10.0.0.5)" />
+          <button id="applyFilters">Apply</button>
+        </div>
+      </div>
+
+      <div class="table" id="alertsTable">
+        <div class="row"><div class="muted">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- Events -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Recent events</h2>
+        <span class="pill" id="eventsCount">—</span>
+      </div>
+
+      <div class="table" id="eventsTable">
+        <div class="row"><div class="muted">Loading…</div></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

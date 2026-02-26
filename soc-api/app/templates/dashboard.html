@@ -4,10 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SentinelLab SOC</title>
+
   <link rel="stylesheet" href="/static/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
+
 <body>
   <header class="topbar">
     <div>
@@ -20,36 +21,58 @@
   </header>
 
   <main class="container">
+    <!-- KPIs -->
     <section class="kpis">
-      <div class="kpi"><div class="kpi-label">Active alerts</div><div class="kpi-value" id="kpiActiveAlerts">—</div></div>
-      <div class="kpi"><div class="kpi-label">Total alerts</div><div class="kpi-value" id="kpiTotalAlerts">—</div></div>
-      <div class="kpi"><div class="kpi-label">Events (1h)</div><div class="kpi-value" id="kpiEventsHour">—</div></div>
-      <div class="kpi"><div class="kpi-label">Total events</div><div class="kpi-value" id="kpiTotalEvents">—</div></div>
+      <div class="kpi">
+        <div class="kpi-label">Active alerts</div>
+        <div class="kpi-value" id="kpiActiveAlerts">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total alerts</div>
+        <div class="kpi-value" id="kpiTotalAlerts">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Events (1h)</div>
+        <div class="kpi-value" id="kpiEventsHour">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total events</div>
+        <div class="kpi-value" id="kpiTotalEvents">—</div>
+      </div>
     </section>
-        <section class="card">
+
+    <!-- Analytics -->
+    <section class="card">
       <div class="card-header">
-        <h2>Analytics (last hour)</h2>
+        <h2>Analytics</h2>
         <span class="pill" id="statsWindow">—</span>
       </div>
 
       <div class="charts">
         <div class="chart">
           <h3>Events / minute</h3>
-          <canvas id="chartEventsPerMin"></canvas>
+          <div class="canvas-wrap">
+            <canvas id="chartEventsPerMin"></canvas>
+          </div>
         </div>
 
         <div class="chart">
           <h3>Alerts by severity</h3>
-          <canvas id="chartSeverity"></canvas>
+          <div class="canvas-wrap">
+            <canvas id="chartSeverity"></canvas>
+          </div>
         </div>
 
         <div class="chart">
           <h3>Top source IPs</h3>
-          <canvas id="chartTopIPs"></canvas>
+          <div class="canvas-wrap">
+            <canvas id="chartTopIPs"></canvas>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- Alerts -->
     <section class="card">
       <div class="card-header">
         <h2>Alerts</h2>
@@ -72,24 +95,19 @@
       </div>
 
       <div class="table" id="alertsTable">
-        <div class="row head">
-          <div>ID</div><div>Time</div><div>Rule</div><div>Severity</div><div>Host</div><div>Src IP</div><div>User</div><div>Status</div><div>Action</div>
-        </div>
-        <div class="row"><div class="muted" style="grid-column:1/-1">Loading…</div></div>
+        <div class="row"><div class="muted">Loading…</div></div>
       </div>
     </section>
 
+    <!-- Events -->
     <section class="card">
       <div class="card-header">
         <h2>Recent events</h2>
-        <div class="muted" id="eventsCount"></div>
+        <span class="pill" id="eventsCount">—</span>
       </div>
 
       <div class="table" id="eventsTable">
-        <div class="row head">
-          <div>ID</div><div>Received</div><div>Type</div><div>Host</div><div>Src IP</div><div>User</div>
-        </div>
-        <div class="row"><div class="muted" style="grid-column:1/-1">Loading…</div></div>
+        <div class="row"><div class="muted">Loading…</div></div>
       </div>
     </section>
   </main>
@@ -97,4 +115,3 @@
   <script src="/static/dashboard.js"></script>
 </body>
 </html>
-
